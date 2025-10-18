@@ -1,0 +1,28 @@
+using System.Linq.Expressions;
+using Domain.Entities;
+
+namespace Infrastructure.Repositories
+{
+    public interface IGenericRepository<T> where T : BaseEntity
+    {
+        Task<T?> GetByIdAsync(Guid id);
+        Task<IEnumerable<T>> GetAllAsync();
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
+        Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
+        Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
+
+        void Add(T entity);
+        void AddRange(IEnumerable<T> entities);
+        void Update(T entity);
+        void UpdateRange(IEnumerable<T> entities);
+        void Remove(T entity);
+        void RemoveRange(IEnumerable<T> entities);
+        void SoftDelete(T entity);
+        void SoftDeleteRange(IEnumerable<T> entities);
+
+        Task<int> SaveChangesAsync();
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    }
+}
+

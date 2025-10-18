@@ -1,4 +1,11 @@
-﻿global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Authorization;
+global using MediatR;
+global using FluentValidation;
+global using Mapster;
 global using System.Security.Claims;
-global using AutoMapper;
+global using FluentValidation.AspNetCore;
+global using Microsoft.EntityFrameworkCore;
+global using Serilog;
+global using System.ComponentModel.DataAnnotations;
+global using System.ComponentModel.DataAnnotations.Schema;

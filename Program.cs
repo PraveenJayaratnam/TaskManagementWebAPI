@@ -1,15 +1,15 @@
+using TaskManagementWebAPI;
+
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
+var services = builder.Services;
 
-// Add services to the container.
+builder.ConfigureSerilog();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+services.AddApplicationServices(configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -18,8 +18,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowAngularApp");
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
+await app.InitializeDatabaseAsync();
+
+Log.Information("Task Management API starting up...");
+
 app.Run();
+
