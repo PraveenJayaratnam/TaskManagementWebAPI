@@ -4,22 +4,22 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {
     public CreateUserCommandValidator()
     {
-        RuleFor(x => x.Username)
+        RuleFor(x => x.CreateUserDto.Username)
             .NotEmpty().WithMessage("Username is required")
             .MinimumLength(3).WithMessage("Username must be at least 3 characters long")
             .MaximumLength(50).WithMessage("Username cannot exceed 50 characters")
             .Matches("^[a-zA-Z0-9_]+$").WithMessage("Username can only contain letters, numbers, and underscores");
 
-        RuleFor(x => x.Password)
+        RuleFor(x => x.CreateUserDto.Password)
             .NotEmpty().WithMessage("Password is required")
             .MinimumLength(6).WithMessage("Password must be at least 6 characters long")
             .Matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)").WithMessage("Password must contain at least one lowercase letter, one uppercase letter, and one number");
 
 
-        RuleFor(x => x.FirstName)
+        RuleFor(x => x.CreateUserDto.FirstName)
             .MaximumLength(50).WithMessage("First name cannot exceed 50 characters");
 
-        RuleFor(x => x.LastName)
+        RuleFor(x => x.CreateUserDto.LastName)
             .MaximumLength(50).WithMessage("Last name cannot exceed 50 characters");
     }
 }

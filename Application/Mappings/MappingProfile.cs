@@ -34,13 +34,13 @@ public class MappingProfile : IRegister
         config.NewConfig<TaskItem, TaskDto>()
             .Map(dest => dest.Id, src => src.Id.ToString())
             .Map(dest => dest.DueDate, src => src.DueDate.HasValue ? src.DueDate.Value.ToString("yyyy-MM-dd") : null)
-            .Map(dest => dest.UserName, src => $"{src.User.FirstName} {src.User.LastName}");
+            .Map(dest => dest.Priority, src => src.Priority);
 
         config.NewConfig<CreateTaskDto, TaskItem>()
             .Ignore(dest => dest.Id)
             .Ignore(dest => dest.Status)
-            .Ignore(dest => dest.Priority)
             .Map(dest => dest.DueDate, src => !string.IsNullOrEmpty(src.DueDate) ? DateTime.Parse(src.DueDate) : (DateTime?)null)
+            .Map(dest => dest.Priority, src => src.Priority)
             .Ignore(dest => dest.IsActive)
             .Ignore(dest => dest.IsDeleted)
             .Ignore(dest => dest.CompletedAt)
@@ -49,8 +49,8 @@ public class MappingProfile : IRegister
 
         config.NewConfig<UpdateTaskDto, TaskItem>()
             .Ignore(dest => dest.Id)
-            .Ignore(dest => dest.Priority)
             .Map(dest => dest.DueDate, src => !string.IsNullOrEmpty(src.DueDate) ? DateTime.Parse(src.DueDate) : (DateTime?)null)
+            .Map(dest => dest.Priority, src => src.Priority)
             .Ignore(dest => dest.IsActive)
             .Ignore(dest => dest.IsDeleted)
             .Ignore(dest => dest.CompletedAt)

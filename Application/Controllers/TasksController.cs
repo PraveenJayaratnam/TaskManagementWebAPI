@@ -122,7 +122,7 @@ public class TasksController : ControllerBase
         try
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var command = new CreateTaskCommand(userId, createTaskDto.Title, createTaskDto.Description, createTaskDto.DueDate);
+            var command = new CreateTaskCommand(userId, createTaskDto);
             var result = await _mediator.Send(command);
             
             if (result.IsSuccess)
@@ -147,12 +147,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            if (!Enum.TryParse<TaskItemStatus>(updateTaskDto.Status, out var status))
-            {
-                return BadRequest("Invalid status value");
-            }
-            
-            var command = new UpdateTaskCommand(id, updateTaskDto.Title, updateTaskDto.Description, status, updateTaskDto.DueDate);
+            var command = new UpdateTaskCommand(id, updateTaskDto);
             var result = await _mediator.Send(command);
             
             if (result.IsSuccess)

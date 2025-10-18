@@ -17,14 +17,7 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, Resul
     {
         try
         {
-            var createTaskDto = new CreateTaskDto
-            {
-                Title = request.Title,
-                Description = request.Description,
-                DueDate = request.DueDate
-            };
-
-            var taskDto = await _taskService.CreateAsync(request.UserId, createTaskDto);
+            var taskDto = await _taskService.CreateAsync(request.UserId, request.CreateTaskDto);
             return Result<TaskDto>.Success(taskDto);
         }
         catch (Exception ex)

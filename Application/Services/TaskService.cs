@@ -72,12 +72,9 @@ public class TaskService : ITaskService
     {
         var tasks = await _unitOfWork.Tasks.GetByUserIdAsync(filterDto.UserId);
         
-        if (!string.IsNullOrEmpty(filterDto.Status))
+        if (filterDto.Status.HasValue)
         {
-            if (Enum.TryParse<TaskItemStatus>(filterDto.Status, out var status))
-            {
-                tasks = tasks.Where(t => t.Status == status);
-            }
+            tasks = tasks.Where(t => t.Status == filterDto.Status.Value);
         }
         
         if (filterDto.DueDateFrom.HasValue)
@@ -114,12 +111,9 @@ public class TaskService : ITaskService
     {
         var tasks = await _unitOfWork.Tasks.GetByUserIdAsync(filterDto.UserId);
         
-        if (!string.IsNullOrEmpty(filterDto.Status))
+        if (filterDto.Status.HasValue)
         {
-            if (Enum.TryParse<TaskItemStatus>(filterDto.Status, out var status))
-            {
-                tasks = tasks.Where(t => t.Status == status);
-            }
+            tasks = tasks.Where(t => t.Status == filterDto.Status.Value);
         }
         
         if (filterDto.DueDateFrom.HasValue)

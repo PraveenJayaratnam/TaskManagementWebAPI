@@ -84,7 +84,7 @@ public class UsersController : ControllerBase
             if (id != userId)
                 return Forbid("You can only update your own profile");
 
-            var command = new UpdateUserCommand(id, updateUserDto.Username, updateUserDto.FirstName, updateUserDto.LastName);
+            var command = new UpdateUserCommand(id, updateUserDto);
             var result = await _mediator.Send(command);
             
             if (result.IsSuccess)

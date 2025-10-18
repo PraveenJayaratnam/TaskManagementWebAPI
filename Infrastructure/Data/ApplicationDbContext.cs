@@ -51,6 +51,7 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         ConfigureBaseEntityProperties(modelBuilder);
+        ConfigureNavigationProperties(modelBuilder);
 
         DbSets.ConfigureDbSets(modelBuilder);
 
@@ -72,6 +73,33 @@ public class ApplicationDbContext : DbContext
                     .HasDefaultValue(false);
             }
         }
+    }
+
+    private void ConfigureNavigationProperties(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TaskItem>()
+            .HasOne(t => t.CreatedBy)
+            .WithMany()
+            .HasForeignKey(t => t.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TaskItem>()
+            .HasOne(t => t.UpdatedBy)
+            .WithMany()
+            .HasForeignKey(t => t.UpdatedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.CreatedBy)
+            .WithMany()
+            .HasForeignKey(u => u.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.UpdatedBy)
+            .WithMany()
+            .HasForeignKey(u => u.UpdatedById)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
 }
