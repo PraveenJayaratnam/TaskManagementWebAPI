@@ -137,13 +137,13 @@ namespace TaskManagementWebAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("ea2a6d8e-54c0-4f52-b224-9faed20950c2"),
-                            CreatedAt = new DateTime(2025, 10, 18, 20, 15, 17, 244, DateTimeKind.Utc).AddTicks(2723),
+                            Id = new Guid("283ca4f4-6ea2-4048-8da0-b9f974798f43"),
+                            CreatedAt = new DateTime(2025, 10, 18, 20, 18, 38, 931, DateTimeKind.Utc).AddTicks(1292),
                             FirstName = "Admin",
                             IsActive = true,
                             IsDeleted = false,
                             LastName = "User",
-                            PasswordHash = "$2a$11$4F5jICmzftf/zk3YJiu9HO2Tq0ULiuaRFysfZAI4K4hAfJsbZ6ZCS",
+                            PasswordHash = "$2a$11$t9bKfkMo/wdnCmZGydr2wuDg0QoEG2aZz1siKhQ.gfcD4FOX/dmj2",
                             Username = "admin"
                         });
                 });

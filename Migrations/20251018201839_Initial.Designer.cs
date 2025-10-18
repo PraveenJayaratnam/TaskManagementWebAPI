@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace TaskManagementWebAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251018201231_Initial")]
+    [Migration("20251018201839_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,91 +24,6 @@ namespace TaskManagementWebAPI.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Domain.Entities.MigrationHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("AppliedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("AppliedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("Environment")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsRolledBack")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("MigrationName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("RollbackScript")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTime?>("RolledBackAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RolledBackBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Version")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppliedAt");
-
-                    b.HasIndex("Environment");
-
-                    b.HasIndex("MigrationName", "Version")
-                        .IsUnique();
-
-                    b.ToTable("MigrationHistory", "TaskManagement");
-                });
 
             modelBuilder.Entity("Domain.Entities.TaskItem", b =>
                 {
@@ -225,13 +140,13 @@ namespace TaskManagementWebAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("2dac8de8-4763-4888-ae7a-9dcdfb0460a4"),
-                            CreatedAt = new DateTime(2025, 10, 18, 20, 12, 30, 834, DateTimeKind.Utc).AddTicks(8582),
+                            Id = new Guid("283ca4f4-6ea2-4048-8da0-b9f974798f43"),
+                            CreatedAt = new DateTime(2025, 10, 18, 20, 18, 38, 931, DateTimeKind.Utc).AddTicks(1292),
                             FirstName = "Admin",
                             IsActive = true,
                             IsDeleted = false,
                             LastName = "User",
-                            PasswordHash = "$2a$11$8eSLzmEdDTOa1j8lzFooPe63Fn4s4xqvcd35uW0.DyjONnFM8U6Fy",
+                            PasswordHash = "$2a$11$t9bKfkMo/wdnCmZGydr2wuDg0QoEG2aZz1siKhQ.gfcD4FOX/dmj2",
                             Username = "admin"
                         });
                 });
