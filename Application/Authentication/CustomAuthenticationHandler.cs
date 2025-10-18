@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Application.Services;
 
 namespace Application.Authentication;
@@ -35,14 +36,27 @@ public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationS
 
         try
         {
+            Logger.LogInformation("X-User header value: {UserHeaderValue}", userHeaderValue);
+            
             // Try to parse as JSON first (new format)
             UserInfo? userInfo = null;
             try
             {
-                userInfo = JsonSerializer.Deserialize<UserInfo>(userHeaderValue);
+                // Parse JSON into a dictionary first
+                var jsonDoc = JsonDocument.Parse(userHeaderValue);
+                var root = jsonDoc.RootElement;
+                
+                userInfo = new UserInfo
+                {
+                    Id = root.GetProperty("id").GetString() ?? string.Empty,
+                    Username = root.GetProperty("username").GetString() ?? string.Empty,
+                    FirstName = root.GetProperty("firstName").GetString() ?? string.Empty,
+                    LastName = root.GetProperty("lastName").GetString() ?? string.Empty
+                };
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
+                Logger.LogInformation("JSON parsing failed, trying legacy format. Error: {Error}", ex.Message);
                 // If JSON parsing fails, treat as plain user ID (legacy format)
                 var userId = userHeaderValue;
                 var legacyUser = await _userService.GetByIdAsync(Guid.Parse(userId));
@@ -67,6 +81,7 @@ public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationS
             // If JSON parsing succeeded, use the user info directly
             if (userInfo == null || string.IsNullOrEmpty(userInfo.Id))
             {
+                Logger.LogWarning("Invalid user information in X-User header. UserInfo is null: {IsNull}, UserId: {UserId}", userInfo == null, userInfo?.Id);
                 return AuthenticateResult.Fail("Invalid user information in X-User header");
             }
 
@@ -98,9 +113,16 @@ public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationS
 
     private class UserInfo
     {
+        [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
+        
+        [JsonPropertyName("username")]
         public string Username { get; set; } = string.Empty;
+        
+        [JsonPropertyName("firstName")]
         public string FirstName { get; set; } = string.Empty;
+        
+        [JsonPropertyName("lastName")]
         public string LastName { get; set; } = string.Empty;
     }
 }

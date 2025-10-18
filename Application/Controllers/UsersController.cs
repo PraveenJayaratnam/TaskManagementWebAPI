@@ -1,6 +1,7 @@
 using Application.DTOs;
 using Application.Features.Users.Queries;
 using Application.Features.Users.Commands;
+using System.Security.Claims;
 
 namespace Application.Controllers;
 
@@ -48,7 +49,8 @@ public class UsersController : ControllerBase
     {
         try
         {
-            var userId = GetCurrentUserId();
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            
             if (id != userId)
                 return Forbid("You can only view your own profile");
 
@@ -77,7 +79,8 @@ public class UsersController : ControllerBase
     {
         try
         {
-            var userId = GetCurrentUserId();
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            
             if (id != userId)
                 return Forbid("You can only update your own profile");
 
@@ -106,7 +109,8 @@ public class UsersController : ControllerBase
     {
         try
         {
-            var userId = GetCurrentUserId();
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            
             if (id != userId)
                 return Forbid("You can only delete your own profile");
 
@@ -130,14 +134,5 @@ public class UsersController : ControllerBase
         }
     }
 
-    private Guid GetCurrentUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
-        {
-            throw new UnauthorizedAccessException("Invalid user token");
-        }
-        return userId;
-    }
 }
 
