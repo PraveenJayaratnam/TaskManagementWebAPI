@@ -24,7 +24,7 @@ A .NET 8 Web API for managing tasks and users.
    ```json
    {
      "ConnectionStrings": {
-       "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=TaskManagementDB;Trusted_Connection=true;MultipleActiveResultSets=true"
+       "DefaultConnection": "Server=(localhost)\\mssqllocaldb;Database=TaskManagementDB;Trusted_Connection=true;MultipleActiveResultSets=true"
      }
    }
    ```
