@@ -2,6 +2,7 @@ using Application.DTOs;
 using Application.Features.Tasks.Commands;
 using Application.Features.Tasks.Queries;
 using Domain.Enums;
+using System.Security.Claims;
 
 namespace Application.Controllers;
 
@@ -39,7 +40,7 @@ public class TasksController : ControllerBase
             else
             {
                 _logger.LogInformation("Getting tasks for user with filters: {@FilterDto}", filterDto);
-                var userId = GetCurrentUserId();
+                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
                 filterDto.UserId = userId;
                 
                 var query = new GetFilteredTasksQuery(filterDto);
@@ -68,7 +69,7 @@ public class TasksController : ControllerBase
         try
         {
             _logger.LogInformation("Getting paginated tasks for user with filters: {@FilterDto}", filterDto);
-            var userId = GetCurrentUserId();
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             filterDto.UserId = userId;
             
             var query = new GetFilteredTasksQuery(filterDto);
@@ -120,7 +121,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var userId = GetCurrentUserId();
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var command = new CreateTaskCommand(userId, createTaskDto.Title, createTaskDto.Description, createTaskDto.DueDate);
             var result = await _mediator.Send(command);
             
@@ -201,7 +202,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var currentUserId = GetCurrentUserId();
+            var currentUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             if (userId != currentUserId)
                 return Forbid("You can only view your own tasks");
 
@@ -225,19 +226,5 @@ public class TasksController : ControllerBase
         }
     }
 
-    private Guid GetCurrentUserId()
-    {
-        if (!Request.Headers.ContainsKey("X-user"))
-        {
-            throw new UnauthorizedAccessException("Missing X-user header");
-        }
-
-        var userIdHeader = Request.Headers["X-user"].FirstOrDefault();
-        if (string.IsNullOrEmpty(userIdHeader) || !Guid.TryParse(userIdHeader, out Guid userId))
-        {
-            throw new UnauthorizedAccessException("Invalid X-user header");
-        }
-        return userId;
-    }
 }
 

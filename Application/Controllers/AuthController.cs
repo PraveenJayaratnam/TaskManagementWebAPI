@@ -60,7 +60,6 @@ public class AuthController : ControllerBase
             var command = new RegisterCommand(
                 registerRequest.Username, 
                 registerRequest.Password, 
-                registerRequest.Email,
                 registerRequest.FirstName, 
                 registerRequest.LastName);
             
