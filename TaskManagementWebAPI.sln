@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManagementWebAPI", "TaskManagementWebAPI.csproj", "{BA108572-06DB-49E8-8185-7AF2C47F592A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BA108572-06DB-49E8-8185-7AF2C47F592A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA108572-06DB-49E8-8185-7AF2C47F592A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA108572-06DB-49E8-8185-7AF2C47F592A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA108572-06DB-49E8-8185-7AF2C47F592A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BBEE168F-3327-4E3A-A6E7-9681D289D9C0}
+	EndGlobalSection
+EndGlobal
