@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+
 namespace Application.Common;
 
 public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
@@ -21,6 +23,12 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
         if (httpContext == null)
         {
             throw new UnauthorizedAccessException("HTTP context is not available");
+        }
+
+        var endpoint = httpContext.GetEndpoint();
+        if (endpoint?.Metadata?.GetMetadata<AllowAnonymousAttribute>() != null)
+        {
+            return await next();
         }
 
         var user = httpContext.User;

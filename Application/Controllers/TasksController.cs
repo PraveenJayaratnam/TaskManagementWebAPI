@@ -105,6 +105,10 @@ public class TasksController : ControllerBase
             
             return NotFound(new { message = result.Error });
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             return BadRequest(new { message = ex.Message });
@@ -126,6 +130,10 @@ public class TasksController : ControllerBase
             }
             
             return BadRequest(new { message = result.Error });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -153,6 +161,10 @@ public class TasksController : ControllerBase
             
             return NotFound(new { message = result.Error });
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             return BadRequest(new { message = ex.Message });
@@ -173,6 +185,10 @@ public class TasksController : ControllerBase
             }
             
             return NotFound(new { message = result.Error });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -198,6 +214,10 @@ public class TasksController : ControllerBase
             }
             
             return BadRequest(new { message = result.Error });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
         }
         catch (Exception ex)
         {
