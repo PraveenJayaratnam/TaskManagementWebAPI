@@ -25,8 +25,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-await app.InitializeDatabaseAsync();
-
 Log.Information("Task Management API starting up...");
 
 app.Run();

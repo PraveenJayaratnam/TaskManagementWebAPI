@@ -30,27 +30,6 @@ namespace Infrastructure.Data
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
-
-            modelBuilder.Entity<MigrationHistory>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.MigrationName).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.Version).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.Description).HasMaxLength(1000);
-                entity.Property(e => e.AppliedAt).IsRequired();
-                entity.Property(e => e.AppliedBy).HasMaxLength(100);
-                entity.Property(e => e.Environment).HasMaxLength(50);
-                entity.Property(e => e.RollbackScript).HasMaxLength(1000);
-                entity.Property(e => e.Notes).HasMaxLength(1000);
-                entity.Property(e => e.IsRolledBack).HasDefaultValue(false);
-                entity.Property(e => e.RolledBackBy).HasMaxLength(100);
-                
-                entity.HasIndex(e => new { e.MigrationName, e.Version }).IsUnique();
-                
-                entity.HasIndex(e => e.AppliedAt);
-                
-                entity.HasIndex(e => e.Environment);
-            });
         }
 
         public static void SeedData(ModelBuilder modelBuilder)
