@@ -10,7 +10,6 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<TaskItem> Tasks { get; set; }
-    public DbSet<MigrationHistory> MigrationHistory { get; set; }
 
     public new DbSet<T> Set<T>() where T : BaseEntity
     {

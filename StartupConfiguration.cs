@@ -40,8 +40,6 @@ public static class StartupConfiguration
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IMigrationHistoryService, MigrationHistoryService>();
-        services.AddScoped<IMigrationHelperService, MigrationHelperService>();
 
         services.AddSingleton(provider =>
         {
@@ -82,18 +80,5 @@ public static class StartupConfiguration
         services.AddAuthorization();
 
         return services;
-    }
-
-    public static async Task InitializeDatabaseAsync(this WebApplication app)
-    {
-        using var scope = app.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var migrationHelper = scope.ServiceProvider.GetRequiredService<IMigrationHelperService>();
-        
-        context.Database.EnsureCreated();
-        Log.Information("Database ensured created successfully");
-        
-        await migrationHelper.RecordInitialMigrationAsync();
-        Log.Information("Initial migration recorded successfully");
     }
 }
