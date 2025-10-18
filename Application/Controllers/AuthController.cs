@@ -21,6 +21,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
     {
         try
@@ -40,6 +41,10 @@ public class AuthController : ControllerBase
             
             return Unauthorized(new LoginResponse { Success = false, Message = result.Error });
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new LoginResponse { Success = false, Message = ex.Message });
+        }
         catch (Exception ex)
         {
             return BadRequest(new LoginResponse { Success = false, Message = ex.Message });
@@ -47,6 +52,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
+    [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
     {
         try
@@ -72,6 +78,10 @@ public class AuthController : ControllerBase
             
             return Conflict(new { message = result.Error });
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             return BadRequest(new { message = ex.Message });
@@ -79,6 +89,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("check-username")]
+    [AllowAnonymous]
     public async Task<IActionResult> CheckUsername([FromQuery] string username)
     {
         try
