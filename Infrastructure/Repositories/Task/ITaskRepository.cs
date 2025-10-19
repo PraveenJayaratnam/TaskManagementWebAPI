@@ -12,5 +12,10 @@ public interface ITaskRepository : IGenericRepository<TaskItem>
     Task<IEnumerable<TaskItem>> SearchAsync(string searchTerm);
     Task<int> GetCountByUserIdAsync(Guid userId);
     Task<IEnumerable<TaskItem>> GetPaginatedAsync(Guid userId, int pageNumber, int pageSize);
+    Task<IQueryable<TaskItem>> GetByUserIdQueryable(Guid userId);
+    Task<IQueryable<TaskItem>> GetByStatusQueryable(TaskItemStatus status);
+    Task<IQueryable<TaskItem>> GetByPriorityQueryable(TaskPriority priority);
+    Task<IQueryable<TaskItem>> GetByDueDateRangeQueryable(DateTime from, DateTime to);
+    Task<IQueryable<TaskItem>> SearchQueryable(string searchTerm);
 }
 

@@ -1,6 +1,7 @@
 using Application.DTOs;
 using Application.Features.Tasks.Commands;
 using Application.Features.Tasks.Queries;
+using Application.Features.Tasks.Queries.GetTasksQueryable;
 using Domain.Enums;
 using System.Security.Claims;
 
@@ -59,6 +60,31 @@ public class TasksController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while getting tasks");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("queryable")]
+    public async Task<IActionResult> GetTasksQueryable([FromQuery] TaskFilterDto? filterDto = null)
+    {
+        try
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            
+            if (filterDto != null)
+            {
+                filterDto.UserId = userId;
+            }
+            
+            var query = new GetTasksQueryableQuery(filterDto);
+            var result = await _mediator.Send(query);
+            var tasks = await result.ToListAsync();
+            
+            return Ok(tasks);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while getting tasks queryable");
             return BadRequest(new { message = ex.Message });
         }
     }

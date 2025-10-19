@@ -18,6 +18,10 @@ public class GetFilteredTasksQueryValidator : AbstractValidator<GetFilteredTasks
             .Must(BeValidSortDirection).WithMessage("Sort direction must be 'asc' or 'desc'")
             .When(x => !string.IsNullOrEmpty(x.Filter.SortDirection));
 
+        RuleFor(x => x.Filter.SortBy)
+            .Must(BeValidSortBy).WithMessage("Sort by must be one of: title, status, priority, createdat, duedate")
+            .When(x => !string.IsNullOrEmpty(x.Filter.SortBy));
+
         RuleFor(x => x.Filter.DueDateFrom)
             .LessThanOrEqualTo(x => x.Filter.DueDateTo)
             .WithMessage("Due date from must be less than or equal to due date to")
@@ -30,6 +34,15 @@ public class GetFilteredTasksQueryValidator : AbstractValidator<GetFilteredTasks
             return true;
 
         return sortDirection.ToLower() == "asc" || sortDirection.ToLower() == "desc";
+    }
+
+    private static bool BeValidSortBy(string? sortBy)
+    {
+        if (string.IsNullOrEmpty(sortBy))
+            return true;
+
+        var validSortFields = new[] { "title", "status", "priority", "createdat", "duedate" };
+        return validSortFields.Contains(sortBy.ToLowerInvariant());
     }
 }
 

@@ -27,19 +27,17 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
             .FirstOrDefaultAsync();
     }
 
-    public virtual async Task<IEnumerable<T>> GetAllAsync()
+    public virtual async Task<IQueryable<T>> GetAllAsync()
     {
-        return await _dbSet
-            .Where(e => !e.IsDeleted)
-            .ToListAsync();
+        return await Task.FromResult(_dbSet
+            .Where(e => !e.IsDeleted));
     }
 
-    public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+    public virtual async Task<IQueryable<T>> FindAsync(Expression<Func<T, bool>> predicate)
     {
-        return await _dbSet
+        return await Task.FromResult(_dbSet
             .Where(e => !e.IsDeleted)
-            .Where(predicate)
-            .ToListAsync();
+            .Where(predicate));
     }
 
     public virtual async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
@@ -66,6 +64,16 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         }
         
         return await query.CountAsync();
+    }
+
+    public virtual async Task<IQueryable<T>> GetAllQueryable()
+    {
+        return await Task.FromResult(_dbSet.Where(e => !e.IsDeleted));
+    }
+
+    public virtual async Task<IQueryable<T>> FindQueryable(Expression<Func<T, bool>> predicate)
+    {
+        return await Task.FromResult(_dbSet.Where(e => !e.IsDeleted).Where(predicate));
     }
 
     #endregion
