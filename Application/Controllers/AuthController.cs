@@ -72,7 +72,7 @@ public class AuthController : ControllerBase
                     _auditService.SetCurrentUserId(userId);
                 }
                 
-                return CreatedAtAction("GetUser", new { id = result.Value!.Id }, result.Value);
+                return Created($"/api/users/{result.Value!.Id}", result.Value);
             }
             
             return Conflict(new { message = result.Error });

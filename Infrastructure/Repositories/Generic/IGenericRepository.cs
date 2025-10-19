@@ -6,11 +6,14 @@ namespace Infrastructure.Repositories
     public interface IGenericRepository<T> where T : BaseEntity
     {
         Task<T?> GetByIdAsync(Guid id);
-        Task<IEnumerable<T>> GetAllAsync();
-        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        Task<IQueryable<T>> GetAllAsync();
+        Task<IQueryable<T>> FindAsync(Expression<Func<T, bool>> predicate);
         Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
         Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
+
+        Task<IQueryable<T>> GetAllQueryable();
+        Task<IQueryable<T>> FindQueryable(Expression<Func<T, bool>> predicate);
 
         void Add(T entity);
         void AddRange(IEnumerable<T> entities);

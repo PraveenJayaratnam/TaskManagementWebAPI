@@ -20,16 +20,16 @@ public class TaskService : ITaskService
         return task != null ? task.Adapt<TaskDto>() : null;
     }
 
-    public async Task<IEnumerable<TaskDto>> GetAllAsync()
+    public async Task<IQueryable<TaskDto>> GetAllAsync()
     {
-        var tasks = await _unitOfWork.Tasks.GetAllAsync();
-        return tasks.Adapt<IEnumerable<TaskDto>>();
+        var query = await _unitOfWork.Tasks.GetAllQueryable();
+        return await Task.FromResult(query.Select(t => t.Adapt<TaskDto>()));
     }
 
-    public async Task<IEnumerable<TaskDto>> GetByUserIdAsync(Guid userId)
+    public async Task<IQueryable<TaskDto>> GetByUserIdAsync(Guid userId)
     {
-        var tasks = await _unitOfWork.Tasks.GetByUserIdAsync(userId);
-        return tasks.Adapt<IEnumerable<TaskDto>>();
+        var query = await _unitOfWork.Tasks.GetByUserIdQueryable(userId);
+        return await Task.FromResult(query.Select(t => t.Adapt<TaskDto>()));
     }
 
     public async Task<TaskDto> CreateAsync(Guid userId, CreateTaskDto createTaskDto)
@@ -68,87 +68,93 @@ public class TaskService : ITaskService
         return true;
     }
 
-    public async Task<IEnumerable<TaskDto>> GetFilteredAsync(TaskFilterDto filterDto)
+    public async Task<IQueryable<TaskDto>> GetFilteredAsync(TaskFilterDto filterDto)
     {
-        var tasks = await _unitOfWork.Tasks.GetByUserIdAsync(filterDto.UserId);
-        
+        var query = await _unitOfWork.Tasks.GetByUserIdQueryable(filterDto.UserId);
+
         if (filterDto.Status.HasValue)
         {
-            tasks = tasks.Where(t => t.Status == filterDto.Status.Value);
+            query = query.Where(t => t.Status == filterDto.Status.Value);
+        }
+        
+        if (filterDto.Priority.HasValue)
+        {
+            query = query.Where(t => t.Priority == filterDto.Priority.Value);
         }
         
         if (filterDto.DueDateFrom.HasValue)
         {
-            tasks = tasks.Where(t => t.DueDate >= filterDto.DueDateFrom.Value);
+            query = query.Where(t => t.DueDate >= filterDto.DueDateFrom.Value);
         }
         
         if (filterDto.DueDateTo.HasValue)
         {
-            tasks = tasks.Where(t => t.DueDate <= filterDto.DueDateTo.Value);
+            query = query.Where(t => t.DueDate <= filterDto.DueDateTo.Value);
         }
         
         if (!string.IsNullOrEmpty(filterDto.SearchTerm))
         {
-            tasks = tasks.Where(t => t.Title.Contains(filterDto.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                   (t.Description != null && t.Description.Contains(filterDto.SearchTerm, StringComparison.OrdinalIgnoreCase)));
+            query = query.Where(t => t.Title.Contains(filterDto.SearchTerm) ||
+                                   (t.Description != null && t.Description.Contains(filterDto.SearchTerm)));
         }
 
         if (!string.IsNullOrEmpty(filterDto.SortBy))
         {
-            tasks = filterDto.SortDirection?.ToLower() == "desc" 
-                ? tasks.OrderByDescending(t => GetPropertyValue(t, filterDto.SortBy))
-                : tasks.OrderBy(t => GetPropertyValue(t, filterDto.SortBy));
+            query = ApplySorting(query, filterDto.SortBy, filterDto.SortDirection);
         }
         else
         {
-            tasks = tasks.OrderByDescending(t => t.CreatedAt);
+            query = query.OrderByDescending(t => t.CreatedAt);
         }
 
-        return tasks.Adapt<IEnumerable<TaskDto>>();
+        return await Task.FromResult(query.Select(t => t.Adapt<TaskDto>()));
     }
 
     public async Task<DataResponse<TaskDto>> GetFilteredPaginatedAsync(TaskFilterDto filterDto)
     {
-        var tasks = await _unitOfWork.Tasks.GetByUserIdAsync(filterDto.UserId);
+        var query = await _unitOfWork.Tasks.GetByUserIdQueryable(filterDto.UserId);
         
         if (filterDto.Status.HasValue)
         {
-            tasks = tasks.Where(t => t.Status == filterDto.Status.Value);
+            query = query.Where(t => t.Status == filterDto.Status.Value);
+        }
+        
+        if (filterDto.Priority.HasValue)
+        {
+            query = query.Where(t => t.Priority == filterDto.Priority.Value);
         }
         
         if (filterDto.DueDateFrom.HasValue)
         {
-            tasks = tasks.Where(t => t.DueDate >= filterDto.DueDateFrom.Value);
+            query = query.Where(t => t.DueDate >= filterDto.DueDateFrom.Value);
         }
         
         if (filterDto.DueDateTo.HasValue)
         {
-            tasks = tasks.Where(t => t.DueDate <= filterDto.DueDateTo.Value);
+            query = query.Where(t => t.DueDate <= filterDto.DueDateTo.Value);
         }
         
         if (!string.IsNullOrEmpty(filterDto.SearchTerm))
         {
-            tasks = tasks.Where(t => t.Title.Contains(filterDto.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                   (t.Description != null && t.Description.Contains(filterDto.SearchTerm, StringComparison.OrdinalIgnoreCase)));
+            query = query.Where(t => t.Title.Contains(filterDto.SearchTerm) ||
+                                   (t.Description != null && t.Description.Contains(filterDto.SearchTerm)));
         }
 
-        var totalCount = tasks.Count();
+        var totalCount = await query.CountAsync();
 
         if (!string.IsNullOrEmpty(filterDto.SortBy))
         {
-            tasks = filterDto.SortDirection?.ToLower() == "desc" 
-                ? tasks.OrderByDescending(t => GetPropertyValue(t, filterDto.SortBy))
-                : tasks.OrderBy(t => GetPropertyValue(t, filterDto.SortBy));
+            query = ApplySorting(query, filterDto.SortBy, filterDto.SortDirection);
         }
         else
         {
-            tasks = tasks.OrderByDescending(t => t.CreatedAt);
+            query = query.OrderByDescending(t => t.CreatedAt);
         }
 
-        var paginatedTasks = tasks
+        var paginatedTasks = await query
             .Skip(filterDto.PageIndex * filterDto.PageSize)
             .Take(filterDto.PageSize)
-            .ToList();
+            .ToListAsync();
 
         var totalPages = (int)Math.Ceiling((double)totalCount / filterDto.PageSize);
 
@@ -161,6 +167,21 @@ public class TaskService : ITaskService
             TotalPages = totalPages,
             HasPreviousPage = filterDto.PageIndex > 0,
             HasNextPage = filterDto.PageIndex < totalPages - 1
+        };
+    }
+
+    private static IQueryable<TaskItem> ApplySorting(IQueryable<TaskItem> query, string sortBy, string? sortDirection)
+    {
+        var isDescending = sortDirection?.ToLower() == "desc";
+        
+        return sortBy?.ToLowerInvariant() switch
+        {
+            "title" => isDescending ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title),
+            "status" => isDescending ? query.OrderByDescending(t => t.Status) : query.OrderBy(t => t.Status),
+            "priority" => isDescending ? query.OrderByDescending(t => t.Priority) : query.OrderBy(t => t.Priority),
+            "createdat" => isDescending ? query.OrderByDescending(t => t.CreatedAt) : query.OrderBy(t => t.CreatedAt),
+            "duedate" => isDescending ? query.OrderByDescending(t => t.DueDate) : query.OrderBy(t => t.DueDate),
+            _ => query.OrderByDescending(t => t.CreatedAt)
         };
     }
 
@@ -186,5 +207,6 @@ public class TaskService : ITaskService
         var task = await _unitOfWork.Tasks.GetByIdAsync(taskId);
         return task != null && task.UserId == userId;
     }
+
 }
 

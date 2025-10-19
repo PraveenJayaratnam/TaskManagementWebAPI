@@ -32,12 +32,18 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             .FirstOrDefaultAsync();
     }
 
-    public override async Task<IEnumerable<User>> GetAllAsync()
+    public override async Task<IQueryable<User>> GetAllAsync()
     {
-        return await _dbSet
+        return await Task.FromResult(_dbSet
             .Include(u => u.Tasks)
-            .Where(u => !u.IsDeleted)
-            .ToListAsync();
+            .Where(u => !u.IsDeleted));
+    }
+
+    public async Task<IQueryable<User>> GetByUsernameQueryable(string username)
+    {
+        return await Task.FromResult(_dbSet
+            .Include(u => u.Tasks)
+            .Where(u => u.Username == username && !u.IsDeleted));
     }
 }
 

@@ -25,11 +25,6 @@ public class UserService : IUserService
         return user != null ? user.Adapt<UserDto>() : null;
     }
 
-    public async Task<IEnumerable<UserDto>> GetAllAsync()
-    {
-        var users = await _unitOfWork.Users.GetAllAsync();
-        return users.Adapt<IEnumerable<UserDto>>();
-    }
 
     public async Task<UserDto> CreateAsync(CreateUserDto createUserDto)
     {
@@ -83,6 +78,12 @@ public class UserService : IUserService
     public async Task<bool> UsernameExistsAsync(string username)
     {
         return await _unitOfWork.Users.UsernameExistsAsync(username);
+    }
+
+    public async Task<IQueryable<UserDto>> GetAllAsync()
+    {
+        var query = await _unitOfWork.Users.GetAllQueryable();
+        return await Task.FromResult(query.Select(u => u.Adapt<UserDto>()));
     }
 }
 

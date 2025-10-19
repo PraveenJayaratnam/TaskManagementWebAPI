@@ -34,6 +34,7 @@ public class TaskFilterDto
 {
     public Guid UserId { get; set; }
     public TaskItemStatus? Status { get; set; }
+    public TaskPriority? Priority { get; set; }
     public DateTime? DueDateFrom { get; set; }
     public DateTime? DueDateTo { get; set; }
     public string? SearchTerm { get; set; }

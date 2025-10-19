@@ -84,13 +84,12 @@ namespace Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public override async Task<IEnumerable<TaskItem>> GetAllAsync()
+        public override async Task<IQueryable<TaskItem>> GetAllAsync()
         {
-            return await _dbSet
+            return await Task.FromResult(_dbSet
                 .Include(t => t.User)
                 .Where(t => !t.IsDeleted)
-                .OrderByDescending(t => t.CreatedAt)
-                .ToListAsync();
+                .OrderByDescending(t => t.CreatedAt));
         }
 
         public override void Update(TaskItem entity)
@@ -100,6 +99,48 @@ namespace Infrastructure.Repositories
                 entity.CompletedAt = DateTime.UtcNow;
             }
             base.Update(entity);
+        }
+
+        public async Task<IQueryable<TaskItem>> GetByUserIdQueryable(Guid userId)
+        {
+            return await Task.FromResult(_dbSet
+                .Include(t => t.User)
+                .Where(t => t.UserId == userId && !t.IsDeleted)
+                .OrderByDescending(t => t.CreatedAt));
+        }
+
+        public async Task<IQueryable<TaskItem>> GetByStatusQueryable(TaskItemStatus status)
+        {
+            return await Task.FromResult(_dbSet
+                .Include(t => t.User)
+                .Where(t => t.Status == status && !t.IsDeleted)
+                .OrderByDescending(t => t.CreatedAt));
+        }
+
+        public async Task<IQueryable<TaskItem>> GetByPriorityQueryable(TaskPriority priority)
+        {
+            return await Task.FromResult(_dbSet
+                .Include(t => t.User)
+                .Where(t => t.Priority == priority && !t.IsDeleted)
+                .OrderByDescending(t => t.CreatedAt));
+        }
+
+        public async Task<IQueryable<TaskItem>> GetByDueDateRangeQueryable(DateTime from, DateTime to)
+        {
+            return await Task.FromResult(_dbSet
+                .Include(t => t.User)
+                .Where(t => t.DueDate >= from && t.DueDate <= to && !t.IsDeleted)
+                .OrderBy(t => t.DueDate));
+        }
+
+        public async Task<IQueryable<TaskItem>> SearchQueryable(string searchTerm)
+        {
+            return await Task.FromResult(_dbSet
+                .Include(t => t.User)
+                .Where(t => (t.Title.Contains(searchTerm) || 
+                           (t.Description != null && t.Description.Contains(searchTerm))) 
+                           && !t.IsDeleted)
+                .OrderByDescending(t => t.CreatedAt));
         }
     }
 }
