@@ -1,3 +1,5 @@
+using Domain.Enums;
+
 namespace Application.DTOs;
 
 public class TaskDto
@@ -5,32 +7,33 @@ public class TaskDto
     public string Id { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public string Priority { get; set; } = string.Empty;
+    public TaskItemStatus Status { get; set; }
+    public TaskPriority? Priority { get; set; }
     public string? DueDate { get; set; }
-    public string? UserName { get; set; }
 }
 
 public class CreateTaskDto
 {
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public string Priority { get; set; } = string.Empty;
+    public TaskItemStatus Status { get; set; } = TaskItemStatus.Pending;
+    public TaskPriority Priority { get; set; } = TaskPriority.Low;
     public string? DueDate { get; set; }
 }
 
 public class UpdateTaskDto
 {
-    public string Title { get; set; } = string.Empty;
+    public string? Title { get; set; }
     public string? Description { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public TaskItemStatus? Status { get; set; }
+    public TaskPriority? Priority { get; set; }
     public string? DueDate { get; set; }
 }
 
 public class TaskFilterDto
 {
     public Guid UserId { get; set; }
-    public string? Status { get; set; }
+    public TaskItemStatus? Status { get; set; }
     public DateTime? DueDateFrom { get; set; }
     public DateTime? DueDateTo { get; set; }
     public string? SearchTerm { get; set; }

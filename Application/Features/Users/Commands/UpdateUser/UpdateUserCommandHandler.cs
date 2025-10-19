@@ -17,14 +17,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
     {
         try
         {
-            var updateUserDto = new UpdateUserDto
-            {
-                Username = request.Username,
-                FirstName = request.FirstName,
-                LastName = request.LastName
-            };
-
-            var userDto = await _userService.UpdateAsync(request.Id, updateUserDto);
+            var userDto = await _userService.UpdateAsync(request.Id, request.UpdateUserDto);
             return Result<UserDto>.Success(userDto);
         }
         catch (KeyNotFoundException ex)

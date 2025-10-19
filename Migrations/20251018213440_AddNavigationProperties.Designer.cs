@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace TaskManagementWebAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251018213440_AddNavigationProperties")]
+    partial class AddNavigationProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -145,13 +148,13 @@ namespace TaskManagementWebAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("ea55379d-2e28-47d3-af4e-c65ec526d831"),
-                            CreatedAt = new DateTime(2025, 10, 18, 22, 25, 49, 618, DateTimeKind.Utc).AddTicks(4506),
+                            Id = new Guid("20d0eb93-d4bd-4b39-b72a-275c0ab501de"),
+                            CreatedAt = new DateTime(2025, 10, 18, 21, 34, 39, 780, DateTimeKind.Utc).AddTicks(1573),
                             FirstName = "Admin",
                             IsActive = true,
                             IsDeleted = false,
                             LastName = "User",
-                            PasswordHash = "$2a$11$mITQxB3atxFFn290HLXlnujdCtL7WlEOc4kQcmHSmpBrH6GrpjGIe",
+                            PasswordHash = "$2a$11$qrxefsUOPlbTGfzEIkbA6.EzhKScqAshAzmh0IMmpby1jRu5.dN6.",
                             Username = "admin"
                         });
                 });

@@ -17,15 +17,7 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, Resul
     {
         try
         {
-            var updateTaskDto = new UpdateTaskDto
-            {
-                Title = request.Title,
-                Description = request.Description,
-                Status = request.Status.ToString(),
-                DueDate = request.DueDate
-            };
-
-            var taskDto = await _taskService.UpdateAsync(request.Id, updateTaskDto);
+            var taskDto = await _taskService.UpdateAsync(request.Id, request.UpdateTaskDto);
             return Result<TaskDto>.Success(taskDto);
         }
         catch (KeyNotFoundException ex)

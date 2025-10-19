@@ -17,15 +17,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
     {
         try
         {
-            var createUserDto = new CreateUserDto
-            {
-                Username = request.Username,
-                Password = request.Password,
-                FirstName = request.FirstName,
-                LastName = request.LastName
-            };
-
-            var userDto = await _userService.CreateAsync(createUserDto);
+            var userDto = await _userService.CreateAsync(request.CreateUserDto);
             return Result<UserDto>.Success(userDto);
         }
         catch (InvalidOperationException ex)
