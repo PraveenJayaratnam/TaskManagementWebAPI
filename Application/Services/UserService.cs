@@ -67,10 +67,32 @@ public class UserService : IUserService
         return true;
     }
 
+    public async Task<bool> DeactivateAsync(Guid id)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        if (user == null) return false;
+
+        user.IsActive = false;
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> ActivateAsync(Guid id)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        if (user == null) return false;
+
+        user.IsActive = true;
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<bool> ValidateUserAsync(string username, string password)
     {
         var user = await _unitOfWork.Users.GetByUsernameAsync(username);
-        if (user == null) return false;
+        if (user == null || !user.IsActive) return false;
 
         return BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
     }
