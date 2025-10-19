@@ -21,6 +21,11 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("Invalid username or password");
         }
 
+        if (!user.IsActive)
+        {
+            throw new UnauthorizedAccessException("Your account has been deactivated. Please contact support.");
+        }
+
         var userDto = user.Adapt<UserDto>();
         return new LoginResponse 
         { 

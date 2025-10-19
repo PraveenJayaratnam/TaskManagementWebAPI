@@ -15,16 +15,14 @@ public class CreateTaskCommandValidator : AbstractValidator<CreateTaskCommand>
             .MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters");
 
         RuleFor(x => x.CreateTaskDto.DueDate)
-            .Must(BeValidDate).WithMessage("Due date must be a valid date in yyyy-MM-dd format")
-            .When(x => !string.IsNullOrEmpty(x.CreateTaskDto.DueDate));
+            .NotEmpty().WithMessage("Due date is required");
+
+        RuleFor(x => x.CreateTaskDto.Status)
+            .IsInEnum().WithMessage("Status must be a valid TaskItemStatus value");
+
+        RuleFor(x => x.CreateTaskDto.Priority)
+            .IsInEnum().WithMessage("Priority must be a valid TaskPriority value");
     }
 
-    private static bool BeValidDate(string? dateString)
-    {
-        if (string.IsNullOrEmpty(dateString))
-            return true;
-
-        return DateTime.TryParse(dateString, out _);
-    }
 }
 

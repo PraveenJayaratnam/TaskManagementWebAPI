@@ -83,7 +83,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     public virtual void Add(T entity)
     {
         var currentUserId = _auditService.GetCurrentUserId();
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         
         entity.CreatedAt = now;
         entity.CreatedById = currentUserId;
@@ -96,7 +96,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     public virtual void AddRange(IEnumerable<T> entities)
     {
         var currentUserId = _auditService.GetCurrentUserId();
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         
         foreach (var entity in entities)
         {
@@ -111,7 +111,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     public virtual void Update(T entity)
     {
         var currentUserId = _auditService.GetCurrentUserId();
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         
         entity.UpdatedAt = now;
         entity.UpdatedById = currentUserId;
@@ -122,7 +122,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     public virtual void UpdateRange(IEnumerable<T> entities)
     {
         var currentUserId = _auditService.GetCurrentUserId();
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         
         foreach (var entity in entities)
         {
@@ -145,7 +145,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     public virtual void SoftDelete(T entity)
     {
         var currentUserId = _auditService.GetCurrentUserId();
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         
         entity.IsDeleted = true;
         entity.UpdatedAt = now;
@@ -157,7 +157,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     public virtual void SoftDeleteRange(IEnumerable<T> entities)
     {
         var currentUserId = _auditService.GetCurrentUserId();
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         
         foreach (var entity in entities)
         {

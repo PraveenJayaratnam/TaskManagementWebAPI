@@ -17,9 +17,9 @@ public class TaskItem : BaseEntity
     
     public TaskPriority? Priority { get; set; }
     
-    public DateTime? DueDate { get; set; }
+    public DateTimeOffset? DueDate { get; set; }
     
-    public DateTime? CompletedAt { get; set; }
+    public DateTimeOffset? CompletedAt { get; set; }
     
     [Required]
     public Guid UserId { get; set; }

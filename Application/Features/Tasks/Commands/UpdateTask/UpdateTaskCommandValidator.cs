@@ -15,19 +15,15 @@ public class UpdateTaskCommandValidator : AbstractValidator<UpdateTaskCommand>
             .MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters");
 
         RuleFor(x => x.UpdateTaskDto.Status)
-            .IsInEnum().WithMessage("Status must be a valid task status");
+            .IsInEnum().WithMessage("Status must be a valid TaskItemStatus value");
+
+        RuleFor(x => x.UpdateTaskDto.Priority)
+            .IsInEnum().WithMessage("Priority must be a valid TaskPriority value");
 
         RuleFor(x => x.UpdateTaskDto.DueDate)
-            .Must(BeValidDate).WithMessage("Due date must be a valid date in yyyy-MM-dd format")
-            .When(x => !string.IsNullOrEmpty(x.UpdateTaskDto.DueDate));
+            .NotEmpty().WithMessage("Due date is required")
+            .When(x => x.UpdateTaskDto.DueDate != null);
     }
 
-    private static bool BeValidDate(string? dateString)
-    {
-        if (string.IsNullOrEmpty(dateString))
-            return true;
-
-        return DateTime.TryParse(dateString, out _);
-    }
 }
 

@@ -9,7 +9,7 @@ public class TaskDto
     public string? Description { get; set; }
     public TaskItemStatus Status { get; set; }
     public TaskPriority? Priority { get; set; }
-    public string? DueDate { get; set; }
+    public DateTimeOffset? DueDate { get; set; }
 }
 
 public class CreateTaskDto
@@ -18,7 +18,7 @@ public class CreateTaskDto
     public string? Description { get; set; }
     public TaskItemStatus Status { get; set; } = TaskItemStatus.Pending;
     public TaskPriority Priority { get; set; } = TaskPriority.Low;
-    public string? DueDate { get; set; }
+    public DateTimeOffset DueDate { get; set; }
 }
 
 public class UpdateTaskDto
@@ -27,7 +27,7 @@ public class UpdateTaskDto
     public string? Description { get; set; }
     public TaskItemStatus? Status { get; set; }
     public TaskPriority? Priority { get; set; }
-    public string? DueDate { get; set; }
+    public DateTimeOffset? DueDate { get; set; }
 }
 
 public class TaskFilterDto
@@ -35,8 +35,8 @@ public class TaskFilterDto
     public Guid UserId { get; set; }
     public TaskItemStatus? Status { get; set; }
     public TaskPriority? Priority { get; set; }
-    public DateTime? DueDateFrom { get; set; }
-    public DateTime? DueDateTo { get; set; }
+    public DateTimeOffset? DueDateFrom { get; set; }
+    public DateTimeOffset? DueDateTo { get; set; }
     public string? SearchTerm { get; set; }
     public string? SortBy { get; set; }
     public string? SortDirection { get; set; }
