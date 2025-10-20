@@ -25,7 +25,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-Log.Information("Task Management API starting up...");
+app.LogApplicationStartup();
 
 app.Run();
 

@@ -11,12 +11,10 @@ namespace Application.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly ILogger<UsersController> _logger;
 
     public UsersController(IMediator mediator, ILogger<UsersController> logger)
     {
         _mediator = mediator;
-        _logger = logger;
     }
 
     [HttpGet]

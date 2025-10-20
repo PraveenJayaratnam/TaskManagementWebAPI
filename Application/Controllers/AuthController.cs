@@ -10,13 +10,11 @@ namespace Application.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly ILogger<AuthController> _logger;
     private readonly IAuditService _auditService;
 
     public AuthController(IMediator mediator, ILogger<AuthController> logger, IAuditService auditService)
     {
         _mediator = mediator;
-        _logger = logger;
         _auditService = auditService;
     }
 

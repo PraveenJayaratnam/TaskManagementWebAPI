@@ -81,4 +81,10 @@ public static class StartupConfiguration
 
         return services;
     }
+
+    public static void LogApplicationStartup(this WebApplication app)
+    {
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Task Management API starting up...");
+    }
 }

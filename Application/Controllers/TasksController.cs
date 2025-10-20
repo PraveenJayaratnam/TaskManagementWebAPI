@@ -2,8 +2,6 @@ using Application.DTOs;
 using Application.Features.Tasks.Commands;
 using Application.Features.Tasks.Queries;
 using Application.Features.Tasks.Queries.GetTasksQueryable;
-using Domain.Enums;
-using System.Security.Claims;
 
 namespace Application.Controllers;
 
