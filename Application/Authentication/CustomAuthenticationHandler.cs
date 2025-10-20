@@ -38,11 +38,9 @@ public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationS
         {
             Logger.LogInformation("X-User header value: {UserHeaderValue}", userHeaderValue);
             
-            // Try to parse as JSON first (new format)
             UserInfo? userInfo = null;
             try
             {
-                // Parse JSON into a dictionary first
                 var jsonDoc = JsonDocument.Parse(userHeaderValue);
                 var root = jsonDoc.RootElement;
                 
@@ -56,8 +54,8 @@ public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationS
             }
             catch (JsonException ex)
             {
-                Logger.LogInformation("JSON parsing failed, trying legacy format. Error: {Error}", ex.Message);
-                // If JSON parsing fails, treat as plain user ID (legacy format)
+                Logger.LogInformation("JSON parsing failed, Error: {Error}", ex.Message);
+                
                 var userId = userHeaderValue;
                 var legacyUser = await _userService.GetByIdAsync(Guid.Parse(userId));
                 if (legacyUser == null)
@@ -78,14 +76,12 @@ public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationS
                 return AuthenticateResult.Success(legacyTicket);
             }
 
-            // If JSON parsing succeeded, use the user info directly
             if (userInfo == null || string.IsNullOrEmpty(userInfo.Id))
             {
                 Logger.LogWarning("Invalid user information in X-User header. UserInfo is null: {IsNull}, UserId: {UserId}", userInfo == null, userInfo?.Id);
                 return AuthenticateResult.Fail("Invalid user information in X-User header");
             }
 
-            // Validate that the user exists in the database
             var user = await _userService.GetByIdAsync(Guid.Parse(userInfo.Id));
             if (user == null)
             {
