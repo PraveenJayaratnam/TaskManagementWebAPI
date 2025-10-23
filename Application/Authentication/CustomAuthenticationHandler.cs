@@ -7,19 +7,12 @@ using Application.Services;
 
 namespace Application.Authentication;
 
-public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+public class CustomAuthenticationHandler(
+    IOptionsMonitor<AuthenticationSchemeOptions> options,
+    ILoggerFactory logger,
+    IUserService userService) 
+    : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, UrlEncoder.Default)
 {
-    private readonly IUserService _userService;
-
-    public CustomAuthenticationHandler(
-        IOptionsMonitor<AuthenticationSchemeOptions> options,
-        ILoggerFactory logger,
-        UrlEncoder encoder,
-        IUserService userService)
-        : base(options, logger, encoder)
-    {
-        _userService = userService;
-    }
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
@@ -57,7 +50,7 @@ public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationS
                 Logger.LogInformation("JSON parsing failed, Error: {Error}", ex.Message);
                 
                 var userId = userHeaderValue;
-                var legacyUser = await _userService.GetByIdAsync(Guid.Parse(userId));
+                var legacyUser = await userService.GetByIdAsync(Guid.Parse(userId));
                 if (legacyUser == null)
                 {
                     return AuthenticateResult.Fail("User not found");
@@ -82,7 +75,7 @@ public class CustomAuthenticationHandler : AuthenticationHandler<AuthenticationS
                 return AuthenticateResult.Fail("Invalid user information in X-User header");
             }
 
-            var user = await _userService.GetByIdAsync(Guid.Parse(userInfo.Id));
+            var user = await userService.GetByIdAsync(Guid.Parse(userInfo.Id));
             if (user == null)
             {
                 return AuthenticateResult.Fail("User not found");

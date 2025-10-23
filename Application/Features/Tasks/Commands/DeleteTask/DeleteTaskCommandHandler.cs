@@ -4,20 +4,14 @@ using Application.Services;
 
 namespace Application.Features.Tasks.Commands;
 
-public class DeleteTaskCommandHandler : IRequestHandler<DeleteTaskCommand, Result>
+public class DeleteTaskCommandHandler(ITaskService taskService) : IRequestHandler<DeleteTaskCommand, Result>
 {
-    private readonly ITaskService _taskService;
-
-    public DeleteTaskCommandHandler(ITaskService taskService)
-    {
-        _taskService = taskService;
-    }
 
     public async Task<Result> Handle(DeleteTaskCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var success = await _taskService.DeleteAsync(request.Id);
+            var success = await taskService.DeleteAsync(request.Id);
             
             if (success)
             {

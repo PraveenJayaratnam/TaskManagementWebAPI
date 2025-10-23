@@ -1,21 +1,15 @@
 using Application.DTOs;
 using Domain.Entities;
-using Infrastructure.UnitOfWork;
+using Infrastructure.Repositories;
 
 namespace Application.Services;
 
-public class AuthService : IAuthService
+public class AuthService(IGenericRepository<User> userRepository) : IAuthService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public AuthService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
 
     public async Task<LoginResponse> LoginAsync(LoginRequest loginRequest)
     {
-        var user = await _unitOfWork.Users.GetByUsernameAsync(loginRequest.Username);
+        var user = await userRepository.FirstOrDefaultAsync(u => u.Username == loginRequest.Username);
         if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
         {
             throw new UnauthorizedAccessException("Invalid username or password");
@@ -37,7 +31,7 @@ public class AuthService : IAuthService
 
     public async Task<UserDto> RegisterAsync(RegisterRequest registerRequest)
     {
-        if (await _unitOfWork.Users.UsernameExistsAsync(registerRequest.Username))
+        if (await userRepository.ExistsAsync(u => u.Username == registerRequest.Username))
         {
             throw new InvalidOperationException("Username already exists");
         }
@@ -45,8 +39,8 @@ public class AuthService : IAuthService
         var user = registerRequest.Adapt<User>();
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerRequest.Password);
         
-        _unitOfWork.Users.Add(user);
-        await _unitOfWork.SaveChangesAsync();
+        await userRepository.AddAsync(user);
+        await userRepository.SaveChangesAsync();
         
         return user.Adapt<UserDto>();
     }
@@ -54,13 +48,13 @@ public class AuthService : IAuthService
 
     public async Task<UserDto?> GetUserByIdAsync(Guid id)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        var user = await userRepository.GetByIdAsync(id);
         return user != null ? user.Adapt<UserDto>() : null;
     }
 
     public async Task<bool> CheckUsernameExistsAsync(string username)
     {
-        return await _unitOfWork.Users.UsernameExistsAsync(username);
+        return await userRepository.ExistsAsync(u => u.Username == username);
     }
 }
 

@@ -4,20 +4,14 @@ using Application.Services;
 
 namespace Application.Features.Tasks.Commands;
 
-public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, Result<TaskDto>>
+public class UpdateTaskCommandHandler(ITaskService taskService) : IRequestHandler<UpdateTaskCommand, Result<TaskDto>>
 {
-    private readonly ITaskService _taskService;
-
-    public UpdateTaskCommandHandler(ITaskService taskService)
-    {
-        _taskService = taskService;
-    }
 
     public async Task<Result<TaskDto>> Handle(UpdateTaskCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var taskDto = await _taskService.UpdateAsync(request.Id, request.UpdateTaskDto);
+            var taskDto = await taskService.UpdateAsync(request.Id, request.UpdateTaskDto);
             return Result<TaskDto>.Success(taskDto);
         }
         catch (KeyNotFoundException ex)

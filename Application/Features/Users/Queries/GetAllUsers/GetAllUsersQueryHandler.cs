@@ -4,20 +4,14 @@ using Application.Services;
 
 namespace Application.Features.Users.Queries;
 
-public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, Result<IEnumerable<UserDto>>>
+public class GetAllUsersQueryHandler(IUserService userService) : IRequestHandler<GetAllUsersQuery, Result<IEnumerable<UserDto>>>
 {
-    private readonly IUserService _userService;
-
-    public GetAllUsersQueryHandler(IUserService userService)
-    {
-        _userService = userService;
-    }
 
     public async Task<Result<IEnumerable<UserDto>>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
     {
         try
         {
-            var users = await _userService.GetAllAsync();
+            var users = await userService.GetAllAsync();
             return Result<IEnumerable<UserDto>>.Success(users);
         }
         catch (Exception ex)

@@ -4,20 +4,14 @@ using Application.Services;
 
 namespace Application.Features.Users.Commands;
 
-public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<UserDto>>
+public class CreateUserCommandHandler(IUserService userService) : IRequestHandler<CreateUserCommand, Result<UserDto>>
 {
-    private readonly IUserService _userService;
-
-    public CreateUserCommandHandler(IUserService userService)
-    {
-        _userService = userService;
-    }
 
     public async Task<Result<UserDto>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var userDto = await _userService.CreateAsync(request.CreateUserDto);
+            var userDto = await userService.CreateAsync(request.CreateUserDto);
             return Result<UserDto>.Success(userDto);
         }
         catch (InvalidOperationException ex)

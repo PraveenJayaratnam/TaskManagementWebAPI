@@ -4,14 +4,8 @@ using Application.Services;
 
 namespace Application.Features.Auth.Commands;
 
-public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<UserDto>>
+public class RegisterCommandHandler(IAuthService authService) : IRequestHandler<RegisterCommand, Result<UserDto>>
 {
-    private readonly IAuthService _authService;
-
-    public RegisterCommandHandler(IAuthService authService)
-    {
-        _authService = authService;
-    }
 
     public async Task<Result<UserDto>> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
@@ -25,7 +19,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
                 LastName = request.LastName
             };
 
-            var userDto = await _authService.RegisterAsync(registerRequest);
+            var userDto = await authService.RegisterAsync(registerRequest);
             return Result<UserDto>.Success(userDto);
         }
         catch (InvalidOperationException ex)

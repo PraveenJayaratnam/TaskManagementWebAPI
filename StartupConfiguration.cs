@@ -3,10 +3,12 @@ using System.Text.Json;
 using Application.Common;
 using Infrastructure.Data;
 using Application.Mappings;
+using Infrastructure.Repositories;
 using Infrastructure.UnitOfWork;
 using Application.Services;
 using Application.Authentication;
 using Microsoft.AspNetCore.Authentication;
+using Domain.Entities;
 
 namespace TaskManagementWebAPI;
 
@@ -33,10 +35,12 @@ public static class StartupConfiguration
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-
         services.AddScoped<IAuditService, AuditService>();
         services.AddHttpContextAccessor();
+        
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<IAuthService, AuthService>();

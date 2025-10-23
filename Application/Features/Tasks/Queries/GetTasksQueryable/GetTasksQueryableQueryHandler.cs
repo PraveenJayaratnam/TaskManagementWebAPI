@@ -4,24 +4,18 @@ using MediatR;
 
 namespace Application.Features.Tasks.Queries.GetTasksQueryable;
 
-public class GetTasksQueryableQueryHandler : IRequestHandler<GetTasksQueryableQuery, IQueryable<TaskDto>>
+public class GetTasksQueryableQueryHandler(ITaskService taskService) : IRequestHandler<GetTasksQueryableQuery, IQueryable<TaskDto>>
 {
-    private readonly ITaskService _taskService;
-
-    public GetTasksQueryableQueryHandler(ITaskService taskService)
-    {
-        _taskService = taskService;
-    }
 
     public async Task<IQueryable<TaskDto>> Handle(GetTasksQueryableQuery request, CancellationToken cancellationToken)
     {
         if (request.FilterDto == null)
         {
-            return await _taskService.GetAllAsync();
+            return await taskService.GetAllAsync();
         }
         else
         {
-            return await _taskService.GetFilteredAsync(request.FilterDto);
+            return await taskService.GetFilteredAsync(request.FilterDto);
         }
     }
 }

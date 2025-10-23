@@ -8,17 +8,8 @@ namespace Application.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class TasksController : ControllerBase
+public class TasksController(IMediator mediator, ILogger<TasksController> logger) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly ILogger<TasksController> _logger;
-
-    public TasksController(IMediator mediator, ILogger<TasksController> logger)
-    {
-        _mediator = mediator;
-        _logger = logger;
-    }
-
     [HttpGet]
     public async Task<IActionResult> GetTasks([FromQuery] TaskFilterDto? filterDto = null)
     {
@@ -27,7 +18,7 @@ public class TasksController : ControllerBase
             if (filterDto == null)
             {
                 var query = new GetAllTasksQuery();
-                var result = await _mediator.Send(query);
+                var result = await mediator.Send(query);
                 
                 if (result.IsSuccess)
                 {
@@ -38,16 +29,16 @@ public class TasksController : ControllerBase
             }
             else
             {
-                _logger.LogInformation("Getting tasks for user with filters: {@FilterDto}", filterDto);
+                logger.LogInformation("Getting tasks for user with filters: {@FilterDto}", filterDto);
                 var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
                 filterDto.UserId = userId;
                 
                 var query = new GetFilteredTasksQuery(filterDto);
-                var result = await _mediator.Send(query);
+                var result = await mediator.Send(query);
                 
                 if (result.IsSuccess)
                 {
-                    _logger.LogInformation("Retrieved {TaskCount} tasks for user {UserId} (Page {PageIndex} of {TotalPages})", 
+                    logger.LogInformation("Retrieved {TaskCount} tasks for user {UserId} (Page {PageIndex} of {TotalPages})", 
                         result.Value!.Items.Count, userId, result.Value.PageIndex, result.Value.TotalPages);
                     return Ok(result.Value);
                 }
@@ -57,7 +48,7 @@ public class TasksController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while getting tasks");
+            logger.LogError(ex, "Error occurred while getting tasks");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -75,14 +66,14 @@ public class TasksController : ControllerBase
             }
             
             var query = new GetTasksQueryableQuery(filterDto);
-            var result = await _mediator.Send(query);
+            var result = await mediator.Send(query);
             var tasks = await result.ToListAsync();
             
             return Ok(tasks);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while getting tasks queryable");
+            logger.LogError(ex, "Error occurred while getting tasks queryable");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -92,16 +83,16 @@ public class TasksController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Getting paginated tasks for user with filters: {@FilterDto}", filterDto);
+            logger.LogInformation("Getting paginated tasks for user with filters: {@FilterDto}", filterDto);
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             filterDto.UserId = userId;
             
             var query = new GetFilteredTasksQuery(filterDto);
-            var result = await _mediator.Send(query);
+            var result = await mediator.Send(query);
             
             if (result.IsSuccess)
             {
-                _logger.LogInformation("Retrieved {TaskCount} tasks for user {UserId} (Page {PageIndex} of {TotalPages})", 
+                logger.LogInformation("Retrieved {TaskCount} tasks for user {UserId} (Page {PageIndex} of {TotalPages})", 
                     result.Value!.Items.Count, userId, result.Value.PageIndex, result.Value.TotalPages);
                 return Ok(result.Value);
             }
@@ -110,7 +101,7 @@ public class TasksController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while getting paginated tasks");
+            logger.LogError(ex, "Error occurred while getting paginated tasks");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -121,7 +112,7 @@ public class TasksController : ControllerBase
         try
         {
             var query = new GetTaskByIdQuery(id);
-            var result = await _mediator.Send(query);
+            var result = await mediator.Send(query);
             
             if (result.IsSuccess)
             {
@@ -147,7 +138,7 @@ public class TasksController : ControllerBase
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var command = new CreateTaskCommand(userId, createTaskDto);
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             
             if (result.IsSuccess)
             {
@@ -172,7 +163,7 @@ public class TasksController : ControllerBase
         try
         {
             var command = new UpdateTaskCommand(id, updateTaskDto);
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             
             if (result.IsSuccess)
             {
@@ -197,7 +188,7 @@ public class TasksController : ControllerBase
         try
         {
             var command = new DeleteTaskCommand(id);
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             
             if (result.IsSuccess)
             {
@@ -226,7 +217,7 @@ public class TasksController : ControllerBase
                 return Forbid("You can only view your own tasks");
 
             var query = new GetTasksByUserQuery(userId);
-            var result = await _mediator.Send(query);
+            var result = await mediator.Send(query);
             
             if (result.IsSuccess)
             {

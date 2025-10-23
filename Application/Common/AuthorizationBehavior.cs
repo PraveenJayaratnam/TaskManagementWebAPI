@@ -1,24 +1,13 @@
-using Microsoft.AspNetCore.Authorization;
-
 namespace Application.Common;
 
-public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class AuthorizationBehavior<TRequest, TResponse>(
+    IHttpContextAccessor httpContextAccessor) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IAuthorizationService _authorizationService;
-
-    public AuthorizationBehavior(
-        IHttpContextAccessor httpContextAccessor,
-        IAuthorizationService authorizationService)
-    {
-        _httpContextAccessor = httpContextAccessor;
-        _authorizationService = authorizationService;
-    }
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        var httpContext = _httpContextAccessor.HttpContext;
+        var httpContext = httpContextAccessor.HttpContext;
         
         if (httpContext == null)
         {

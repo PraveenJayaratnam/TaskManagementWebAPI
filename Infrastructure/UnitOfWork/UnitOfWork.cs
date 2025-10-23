@@ -1,66 +1,51 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using Infrastructure.Data;
-using Application.Services;
-using Infrastructure.Repositories;
 
 namespace Infrastructure.UnitOfWork;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IAuditService _auditService;
-    private IDbContextTransaction? _transaction;
-    private IUserRepository? _userRepository;
-    private ITaskRepository? _taskRepository;
-
-    public UnitOfWork(ApplicationDbContext context, IAuditService auditService)
-    {
-        _context = context;
-        _auditService = auditService;
-    }
-
-    public IUserRepository Users => _userRepository ??= new UserRepository(_context, _auditService);
-    public ITaskRepository Tasks => _taskRepository ??= new TaskRepository(_context, _auditService);
+    private readonly ApplicationDbContext context = context;
+    private IDbContextTransaction? transaction;
 
     public async Task<int> SaveChangesAsync()
     {
-        return await _context.SaveChangesAsync();
+        return await context.SaveChangesAsync();
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {
-        return await _context.SaveChangesAsync(cancellationToken);
+        return await context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task BeginTransactionAsync()
     {
-        _transaction = await _context.Database.BeginTransactionAsync();
+        transaction = await context.Database.BeginTransactionAsync();
     }
 
     public async Task CommitTransactionAsync()
     {
-        if (_transaction != null)
+        if (transaction != null)
         {
-            await _transaction.CommitAsync();
-            await _transaction.DisposeAsync();
-            _transaction = null;
+            await transaction.CommitAsync();
+            await transaction.DisposeAsync();
+            transaction = null;
         }
     }
 
     public async Task RollbackTransactionAsync()
     {
-        if (_transaction != null)
+        if (transaction != null)
         {
-            await _transaction.RollbackAsync();
-            await _transaction.DisposeAsync();
-            _transaction = null;
+            await transaction.RollbackAsync();
+            await transaction.DisposeAsync();
+            transaction = null;
         }
     }
 
     public void Dispose()
     {
-        _transaction?.Dispose();
-        _context.Dispose();
+        transaction?.Dispose();
+        context.Dispose();
     }
 }
-
