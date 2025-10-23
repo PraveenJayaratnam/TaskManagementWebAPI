@@ -3,20 +3,14 @@ using Application.Services;
 
 namespace Application.Features.Users.Commands;
 
-public class ActivateUserCommandHandler : IRequestHandler<ActivateUserCommand, Result<bool>>
+public class ActivateUserCommandHandler(IUserService userService) : IRequestHandler<ActivateUserCommand, Result<bool>>
 {
-    private readonly IUserService _userService;
-
-    public ActivateUserCommandHandler(IUserService userService)
-    {
-        _userService = userService;
-    }
 
     public async Task<Result<bool>> Handle(ActivateUserCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var result = await _userService.ActivateAsync(request.Id);
+            var result = await userService.ActivateAsync(request.Id);
             return Result<bool>.Success(result);
         }
         catch (KeyNotFoundException ex)

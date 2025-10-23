@@ -3,20 +3,14 @@ using Application.Services;
 
 namespace Application.Features.Users.Commands
 {
-    public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Result>
+    public class DeleteUserCommandHandler(IUserService userService) : IRequestHandler<DeleteUserCommand, Result>
     {
-        private readonly IUserService _userService;
-
-        public DeleteUserCommandHandler(IUserService userService)
-        {
-            _userService = userService;
-        }
 
         public async Task<Result> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
         {
             try
             {
-                var success = await _userService.DeleteAsync(request.Id);
+                var success = await userService.DeleteAsync(request.Id);
                 
                 if (success)
                 {

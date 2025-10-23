@@ -7,17 +7,8 @@ namespace Application.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController(IMediator mediator, IAuditService auditService) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly IAuditService _auditService;
-
-    public AuthController(IMediator mediator, ILogger<AuthController> logger, IAuditService auditService)
-    {
-        _mediator = mediator;
-        _auditService = auditService;
-    }
-
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
@@ -25,13 +16,13 @@ public class AuthController : ControllerBase
         try
         {
             var command = new LoginCommand(loginRequest.Username, loginRequest.Password);
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             
             if (result.IsSuccess)
             {
                 if (result.Value?.User?.Id != null && Guid.TryParse(result.Value.User.Id, out var userId))
                 {
-                    _auditService.SetCurrentUserId(userId);
+                    auditService.SetCurrentUserId(userId);
                 }
                 
                 return Ok(result.Value);
@@ -61,13 +52,13 @@ public class AuthController : ControllerBase
                 registerRequest.FirstName, 
                 registerRequest.LastName);
             
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             
             if (result.IsSuccess)
             {
                 if (result.Value?.Id != null && Guid.TryParse(result.Value.Id, out var userId))
                 {
-                    _auditService.SetCurrentUserId(userId);
+                    auditService.SetCurrentUserId(userId);
                 }
                 
                 return Created($"/api/users/{result.Value!.Id}", result.Value);
@@ -97,7 +88,7 @@ public class AuthController : ControllerBase
             }
 
             var query = new CheckUsernameQuery(username);
-            var result = await _mediator.Send(query);
+            var result = await mediator.Send(query);
             
             if (result.IsSuccess)
             {

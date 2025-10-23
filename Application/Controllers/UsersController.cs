@@ -1,29 +1,21 @@
 using Application.DTOs;
 using Application.Features.Users.Queries;
 using Application.Features.Users.Commands;
-using System.Security.Claims;
 
 namespace Application.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class UsersController : ControllerBase
+public class UsersController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public UsersController(IMediator mediator, ILogger<UsersController> logger)
-    {
-        _mediator = mediator;
-    }
-
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {
         try
         {
             var query = new GetAllUsersQuery();
-            var result = await _mediator.Send(query);
+            var result = await mediator.Send(query);
             
             if (result.IsSuccess)
             {
@@ -53,7 +45,7 @@ public class UsersController : ControllerBase
                 return BadRequest(new { message = "You can only view your own profile" });
 
             var query = new GetUserByIdQuery(id);
-            var result = await _mediator.Send(query);
+            var result = await mediator.Send(query);
             
             if (result.IsSuccess)
             {
@@ -83,7 +75,7 @@ public class UsersController : ControllerBase
                 return BadRequest(new { message = "You can only update your own profile" });
 
             var command = new UpdateUserCommand(id, updateUserDto);
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             
             if (result.IsSuccess)
             {
@@ -113,7 +105,7 @@ public class UsersController : ControllerBase
                 return BadRequest(new { message = "You can only delete your own profile" });
 
             var command = new DeleteUserCommand(id);
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             
             if (result.IsSuccess)
             {
@@ -143,7 +135,7 @@ public class UsersController : ControllerBase
                 return BadRequest(new { message = "You can only activate your own profile" });
 
             var command = new ActivateUserCommand(id);
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             
             if (result.IsSuccess)
             {
@@ -173,7 +165,7 @@ public class UsersController : ControllerBase
                 return BadRequest(new { message = "You can only deactivate your own profile" });
 
             var command = new DeactivateUserCommand(id);
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             
             if (result.IsSuccess)
             {

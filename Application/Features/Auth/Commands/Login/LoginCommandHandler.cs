@@ -4,14 +4,8 @@ using Application.Services;
 
 namespace Application.Features.Auth.Commands;
 
-public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
+public class LoginCommandHandler(IAuthService authService) : IRequestHandler<LoginCommand, Result<LoginResponse>>
 {
-    private readonly IAuthService _authService;
-
-    public LoginCommandHandler(IAuthService authService)
-    {
-        _authService = authService;
-    }
 
     public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
@@ -23,7 +17,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
                 Password = request.Password
             };
 
-            var response = await _authService.LoginAsync(loginRequest);
+            var response = await authService.LoginAsync(loginRequest);
             return Result<LoginResponse>.Success(response);
         }
         catch (UnauthorizedAccessException ex)

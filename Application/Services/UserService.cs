@@ -1,34 +1,28 @@
 using Application.DTOs;
 using Domain.Entities;
-using Infrastructure.UnitOfWork;
+using Infrastructure.Repositories;
 
 namespace Application.Services;
 
-public class UserService : IUserService
+public class UserService(IGenericRepository<User> userRepository) : IUserService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public UserService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
 
     public async Task<UserDto?> GetByIdAsync(Guid id)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        var user = await userRepository.GetByIdAsync(id);
         return user != null ? user.Adapt<UserDto>() : null;
     }
 
     public async Task<UserDto?> GetByUsernameAsync(string username)
     {
-        var user = await _unitOfWork.Users.GetByUsernameAsync(username);
+        var user = await userRepository.FirstOrDefaultAsync(u => u.Username == username);
         return user != null ? user.Adapt<UserDto>() : null;
     }
 
 
     public async Task<UserDto> CreateAsync(CreateUserDto createUserDto)
     {
-        if (await _unitOfWork.Users.UsernameExistsAsync(createUserDto.Username))
+        if (await userRepository.ExistsAsync(u => u.Username == createUserDto.Username))
         {
             throw new InvalidOperationException("Username already exists");
         }
@@ -36,62 +30,62 @@ public class UserService : IUserService
         var user = createUserDto.Adapt<User>();
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(createUserDto.Password);
         
-        _unitOfWork.Users.Add(user);
-        await _unitOfWork.SaveChangesAsync();
+        await userRepository.AddAsync(user);
+        await userRepository.SaveChangesAsync();
         
         return user.Adapt<UserDto>();
     }
 
     public async Task<UserDto> UpdateAsync(Guid id, UpdateUserDto updateUserDto)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        var user = await userRepository.GetByIdAsync(id);
         if (user == null)
         {
             throw new KeyNotFoundException("User not found");
         }
 
         updateUserDto.Adapt(user);
-        _unitOfWork.Users.Update(user);
-        await _unitOfWork.SaveChangesAsync();
+        await userRepository.UpdateAsync(user);
+        await userRepository.SaveChangesAsync();
         
         return user.Adapt<UserDto>();
     }
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        var user = await userRepository.GetByIdAsync(id);
         if (user == null) return false;
 
-        _unitOfWork.Users.SoftDelete(user);
-        await _unitOfWork.SaveChangesAsync();
+        await userRepository.SoftDeleteAsync(user);
+        await userRepository.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> DeactivateAsync(Guid id)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        var user = await userRepository.GetByIdAsync(id);
         if (user == null) return false;
 
         user.IsActive = false;
-        _unitOfWork.Users.Update(user);
-        await _unitOfWork.SaveChangesAsync();
+        await userRepository.UpdateAsync(user);
+        await userRepository.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> ActivateAsync(Guid id)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        var user = await userRepository.GetByIdAsync(id);
         if (user == null) return false;
 
         user.IsActive = true;
-        _unitOfWork.Users.Update(user);
-        await _unitOfWork.SaveChangesAsync();
+        await userRepository.UpdateAsync(user);
+        await userRepository.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> ValidateUserAsync(string username, string password)
     {
-        var user = await _unitOfWork.Users.GetByUsernameAsync(username);
+        var user = await userRepository.FirstOrDefaultAsync(u => u.Username == username);
         if (user == null || !user.IsActive) return false;
 
         return BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
@@ -99,13 +93,13 @@ public class UserService : IUserService
 
     public async Task<bool> UsernameExistsAsync(string username)
     {
-        return await _unitOfWork.Users.UsernameExistsAsync(username);
+        return await userRepository.ExistsAsync(u => u.Username == username);
     }
 
     public async Task<IQueryable<UserDto>> GetAllAsync()
     {
-        var query = await _unitOfWork.Users.GetAllQueryable();
-        return await Task.FromResult(query.Select(u => u.Adapt<UserDto>()));
+        var query = await userRepository.GetAllQueryable();
+        return query.Select(u => u.Adapt<UserDto>());
     }
 }
 

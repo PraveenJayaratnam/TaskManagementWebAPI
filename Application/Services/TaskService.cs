@@ -1,35 +1,29 @@
 using Application.DTOs;
 using Domain.Entities;
-using Domain.Enums;
-using Infrastructure.UnitOfWork;
+using Infrastructure.Repositories;
+using System.Linq.Expressions;
 
 namespace Application.Services;
 
-public class TaskService : ITaskService
+public class TaskService(IGenericRepository<TaskItem> taskRepository) : ITaskService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public TaskService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
 
     public async Task<TaskDto?> GetByIdAsync(Guid id)
     {
-        var task = await _unitOfWork.Tasks.GetByIdAsync(id);
+        var task = await taskRepository.GetByIdAsync(id);
         return task != null ? task.Adapt<TaskDto>() : null;
     }
 
     public async Task<IQueryable<TaskDto>> GetAllAsync()
     {
-        var query = await _unitOfWork.Tasks.GetAllQueryable();
-        return await Task.FromResult(query.Select(t => t.Adapt<TaskDto>()));
+        var query = await taskRepository.GetAllQueryable();
+        return query.Select(t => t.Adapt<TaskDto>());
     }
 
     public async Task<IQueryable<TaskDto>> GetByUserIdAsync(Guid userId)
     {
-        var query = await _unitOfWork.Tasks.GetByUserIdQueryable(userId);
-        return await Task.FromResult(query.Select(t => t.Adapt<TaskDto>()));
+        var query = await taskRepository.FindQueryable(t => t.UserId == userId);
+        return query.Select(t => t.Adapt<TaskDto>());
     }
 
     public async Task<TaskDto> CreateAsync(Guid userId, CreateTaskDto createTaskDto)
@@ -37,40 +31,40 @@ public class TaskService : ITaskService
         var task = createTaskDto.Adapt<TaskItem>();
         task.UserId = userId;
         
-        _unitOfWork.Tasks.Add(task);
-        await _unitOfWork.SaveChangesAsync();
+        await taskRepository.AddAsync(task);
+        await taskRepository.SaveChangesAsync();
         
         return task.Adapt<TaskDto>();
     }
 
     public async Task<TaskDto> UpdateAsync(Guid id, UpdateTaskDto updateTaskDto)
     {
-        var task = await _unitOfWork.Tasks.GetByIdAsync(id);
+        var task = await taskRepository.GetByIdAsync(id);
         if (task == null)
         {
             throw new KeyNotFoundException("Task not found");
         }
 
         updateTaskDto.Adapt(task);
-        _unitOfWork.Tasks.Update(task);
-        await _unitOfWork.SaveChangesAsync();
+        await taskRepository.UpdateAsync(task);
+        await taskRepository.SaveChangesAsync();
         
         return task.Adapt<TaskDto>();
     }
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var task = await _unitOfWork.Tasks.GetByIdAsync(id);
+        var task = await taskRepository.GetByIdAsync(id);
         if (task == null) return false;
 
-        _unitOfWork.Tasks.SoftDelete(task);
-        await _unitOfWork.SaveChangesAsync();
+        await taskRepository.SoftDeleteAsync(task);
+        await taskRepository.SaveChangesAsync();
         return true;
     }
 
     public async Task<IQueryable<TaskDto>> GetFilteredAsync(TaskFilterDto filterDto)
     {
-        var query = await _unitOfWork.Tasks.GetByUserIdQueryable(filterDto.UserId);
+        var query = await taskRepository.FindQueryable(t => t.UserId == filterDto.UserId);
 
         if (filterDto.Status.HasValue)
         {
@@ -107,60 +101,32 @@ public class TaskService : ITaskService
             query = query.OrderByDescending(t => t.CreatedAt);
         }
 
-        return await Task.FromResult(query.Select(t => t.Adapt<TaskDto>()));
+        return query.Select(t => t.Adapt<TaskDto>());
     }
 
     public async Task<DataResponse<TaskDto>> GetFilteredPaginatedAsync(TaskFilterDto filterDto)
     {
-        var query = await _unitOfWork.Tasks.GetByUserIdQueryable(filterDto.UserId);
+        var basePredicate = BuildOptimizedPredicate(filterDto);
         
-        if (filterDto.Status.HasValue)
-        {
-            query = query.Where(t => t.Status == filterDto.Status.Value);
-        }
+        var countTask = taskRepository.CountAsync(basePredicate);
+        var orderByExpression = GetOrderByExpression(filterDto.SortBy);
         
-        if (filterDto.Priority.HasValue)
-        {
-            query = query.Where(t => t.Priority == filterDto.Priority.Value);
-        }
-        
-        if (filterDto.DueDateFrom.HasValue)
-        {
-            query = query.Where(t => t.DueDate >= filterDto.DueDateFrom.Value);
-        }
-        
-        if (filterDto.DueDateTo.HasValue)
-        {
-            query = query.Where(t => t.DueDate <= filterDto.DueDateTo.Value);
-        }
-        
-        if (!string.IsNullOrEmpty(filterDto.SearchTerm))
-        {
-            query = query.Where(t => t.Title.Contains(filterDto.SearchTerm) ||
-                                   (t.Description != null && t.Description.Contains(filterDto.SearchTerm)));
-        }
+        var paginatedTasks = await taskRepository.GetPaginatedAsync(
+            basePredicate,
+            filterDto.PageIndex + 1,
+            filterDto.PageSize,
+            orderByExpression,
+            filterDto.SortDirection?.ToLower() == "desc"
+        );
 
-        var totalCount = await query.CountAsync();
-
-        if (!string.IsNullOrEmpty(filterDto.SortBy))
-        {
-            query = ApplySorting(query, filterDto.SortBy, filterDto.SortDirection);
-        }
-        else
-        {
-            query = query.OrderByDescending(t => t.CreatedAt);
-        }
-
-        var paginatedTasks = await query
-            .Skip(filterDto.PageIndex * filterDto.PageSize)
-            .Take(filterDto.PageSize)
-            .ToListAsync();
-
+        var totalCount = await countTask;
+        var tasks = await paginatedTasks.ToListAsync();
+        
         var totalPages = (int)Math.Ceiling((double)totalCount / filterDto.PageSize);
 
         return new DataResponse<TaskDto>
         {
-            Items = paginatedTasks.Adapt<List<TaskDto>>(),
+            Items = tasks.Adapt<List<TaskDto>>(),
             PageSize = filterDto.PageSize,
             PageIndex = filterDto.PageIndex,
             TotalCount = totalCount,
@@ -170,11 +136,36 @@ public class TaskService : ITaskService
         };
     }
 
-    private static IQueryable<TaskItem> ApplySorting(IQueryable<TaskItem> query, string sortBy, string? sortDirection)
+    private Expression<Func<TaskItem, bool>> BuildOptimizedPredicate(TaskFilterDto filterDto)
+    {
+        return t => t.UserId == filterDto.UserId &&
+                   (!filterDto.Status.HasValue || t.Status == filterDto.Status.Value) &&
+                   (!filterDto.Priority.HasValue || t.Priority == filterDto.Priority.Value) &&
+                   (!filterDto.DueDateFrom.HasValue || t.DueDate >= filterDto.DueDateFrom.Value) &&
+                   (!filterDto.DueDateTo.HasValue || t.DueDate <= filterDto.DueDateTo.Value) &&
+                   (string.IsNullOrEmpty(filterDto.SearchTerm) || 
+                    t.Title.Contains(filterDto.SearchTerm) ||
+                    (t.Description != null && t.Description.Contains(filterDto.SearchTerm)));
+    }
+
+    private Expression<Func<TaskItem, object>> GetOrderByExpression(string? sortBy)
+    {
+        return sortBy?.ToLowerInvariant() switch
+        {
+            "title" => t => t.Title,
+            "status" => t => t.Status,
+            "priority" => t => t.Priority,
+            "createdat" => t => t.CreatedAt,
+            "duedate" => t => t.DueDate,
+            _ => t => t.CreatedAt
+        };
+    }
+
+    private IQueryable<TaskItem> ApplySorting(IQueryable<TaskItem> query, string sortBy, string? sortDirection)
     {
         var isDescending = sortDirection?.ToLower() == "desc";
         
-        return sortBy?.ToLowerInvariant() switch
+        return sortBy.ToLowerInvariant() switch
         {
             "title" => isDescending ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title),
             "status" => isDescending ? query.OrderByDescending(t => t.Status) : query.OrderBy(t => t.Status),
@@ -185,26 +176,15 @@ public class TaskService : ITaskService
         };
     }
 
-    private static object GetPropertyValue(TaskItem task, string propertyName)
-    {
-        return propertyName?.ToLowerInvariant() switch
-        {
-            "title" => task.Title ?? string.Empty,
-            "status" => task.Status,
-            "createdat" => task.CreatedAt,
-            "duedate" => task.DueDate ?? DateTime.MinValue,
-            _ => task.CreatedAt
-        };
-    }
 
     public async Task<bool> ExistsAsync(Guid id)
     {
-        return await _unitOfWork.Tasks.ExistsAsync(t => t.Id == id);
+        return await taskRepository.ExistsAsync(t => t.Id == id);
     }
 
     public async Task<bool> BelongsToUserAsync(Guid taskId, Guid userId)
     {
-        var task = await _unitOfWork.Tasks.GetByIdAsync(taskId);
+        var task = await taskRepository.GetByIdAsync(taskId);
         return task != null && task.UserId == userId;
     }
 

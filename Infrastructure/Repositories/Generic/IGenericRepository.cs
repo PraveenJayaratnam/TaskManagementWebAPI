@@ -14,18 +14,25 @@ namespace Infrastructure.Repositories
 
         Task<IQueryable<T>> GetAllQueryable();
         Task<IQueryable<T>> FindQueryable(Expression<Func<T, bool>> predicate);
+        
+        Task<IQueryable<T>> GetPaginatedAsync(Expression<Func<T, bool>> predicate, int pageNumber, int pageSize);
+        Task<IQueryable<T>> GetPaginatedAsync(Expression<Func<T, bool>> predicate, int pageNumber, int pageSize, Expression<Func<T, object>> orderBy);
+        Task<IQueryable<T>> GetPaginatedAsync(Expression<Func<T, bool>> predicate, int pageNumber, int pageSize, Expression<Func<T, object>> orderBy, bool isDescending);
+        
+        Task<IQueryable<T>> GetFilteredAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, bool>> additionalFilter);
+        Task<IQueryable<T>> GetFilteredAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, bool>> additionalFilter, Expression<Func<T, object>> orderBy);
+        Task<IQueryable<T>> GetFilteredAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, bool>> additionalFilter, Expression<Func<T, object>> orderBy, bool isDescending);
 
-        void Add(T entity);
-        void AddRange(IEnumerable<T> entities);
-        void Update(T entity);
-        void UpdateRange(IEnumerable<T> entities);
-        void Remove(T entity);
-        void RemoveRange(IEnumerable<T> entities);
-        void SoftDelete(T entity);
-        void SoftDeleteRange(IEnumerable<T> entities);
+        Task AddAsync(T entity);
+        Task AddRangeAsync(IEnumerable<T> entities);
+        Task UpdateAsync(T entity);
+        Task UpdateRangeAsync(IEnumerable<T> entities);
+        Task RemoveAsync(T entity);
+        Task RemoveRangeAsync(IEnumerable<T> entities);
+        Task SoftDeleteAsync(T entity);
+        Task SoftDeleteRangeAsync(IEnumerable<T> entities);
+        Task SaveChangesAsync();
 
-        Task<int> SaveChangesAsync();
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }
 
