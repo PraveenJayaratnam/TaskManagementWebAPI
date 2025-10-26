@@ -20,12 +20,6 @@ public class TaskService(IGenericRepository<TaskItem> taskRepository) : ITaskSer
         return query.Select(t => t.Adapt<TaskDto>());
     }
 
-    public async Task<IQueryable<TaskDto>> GetByUserIdAsync(Guid userId)
-    {
-        var query = await taskRepository.FindQueryable(t => t.UserId == userId);
-        return query.Select(t => t.Adapt<TaskDto>());
-    }
-
     public async Task<TaskDto> CreateAsync(Guid userId, CreateTaskDto createTaskDto)
     {
         var task = createTaskDto.Adapt<TaskItem>();
@@ -60,48 +54,6 @@ public class TaskService(IGenericRepository<TaskItem> taskRepository) : ITaskSer
         await taskRepository.SoftDeleteAsync(task);
         await taskRepository.SaveChangesAsync();
         return true;
-    }
-
-    public async Task<IQueryable<TaskDto>> GetFilteredAsync(TaskFilterDto filterDto)
-    {
-        var query = await taskRepository.FindQueryable(t => t.UserId == filterDto.UserId);
-
-        if (filterDto.Status.HasValue)
-        {
-            query = query.Where(t => t.Status == filterDto.Status.Value);
-        }
-        
-        if (filterDto.Priority.HasValue)
-        {
-            query = query.Where(t => t.Priority == filterDto.Priority.Value);
-        }
-        
-        if (filterDto.DueDateFrom.HasValue)
-        {
-            query = query.Where(t => t.DueDate >= filterDto.DueDateFrom.Value);
-        }
-        
-        if (filterDto.DueDateTo.HasValue)
-        {
-            query = query.Where(t => t.DueDate <= filterDto.DueDateTo.Value);
-        }
-        
-        if (!string.IsNullOrEmpty(filterDto.SearchTerm))
-        {
-            query = query.Where(t => t.Title.Contains(filterDto.SearchTerm) ||
-                                   (t.Description != null && t.Description.Contains(filterDto.SearchTerm)));
-        }
-
-        if (!string.IsNullOrEmpty(filterDto.SortBy))
-        {
-            query = ApplySorting(query, filterDto.SortBy, filterDto.SortDirection);
-        }
-        else
-        {
-            query = query.OrderByDescending(t => t.CreatedAt);
-        }
-
-        return query.Select(t => t.Adapt<TaskDto>());
     }
 
     public async Task<DataResponse<TaskDto>> GetFilteredPaginatedAsync(TaskFilterDto filterDto)
@@ -161,32 +113,9 @@ public class TaskService(IGenericRepository<TaskItem> taskRepository) : ITaskSer
         };
     }
 
-    private IQueryable<TaskItem> ApplySorting(IQueryable<TaskItem> query, string sortBy, string? sortDirection)
-    {
-        var isDescending = sortDirection?.ToLower() == "desc";
-        
-        return sortBy.ToLowerInvariant() switch
-        {
-            "title" => isDescending ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title),
-            "status" => isDescending ? query.OrderByDescending(t => t.Status) : query.OrderBy(t => t.Status),
-            "priority" => isDescending ? query.OrderByDescending(t => t.Priority) : query.OrderBy(t => t.Priority),
-            "createdat" => isDescending ? query.OrderByDescending(t => t.CreatedAt) : query.OrderBy(t => t.CreatedAt),
-            "duedate" => isDescending ? query.OrderByDescending(t => t.DueDate) : query.OrderBy(t => t.DueDate),
-            _ => query.OrderByDescending(t => t.CreatedAt)
-        };
-    }
-
-
     public async Task<bool> ExistsAsync(Guid id)
     {
         return await taskRepository.ExistsAsync(t => t.Id == id);
     }
-
-    public async Task<bool> BelongsToUserAsync(Guid taskId, Guid userId)
-    {
-        var task = await taskRepository.GetByIdAsync(taskId);
-        return task != null && task.UserId == userId;
-    }
-
 }
 
