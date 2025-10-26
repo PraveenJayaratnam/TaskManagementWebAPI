@@ -1,7 +1,6 @@
 using Application.DTOs;
 using Application.Features.Tasks.Commands;
 using Application.Features.Tasks.Queries;
-using Application.Features.Tasks.Queries.GetTasksQueryable;
 
 namespace Application.Controllers;
 
@@ -10,8 +9,8 @@ namespace Application.Controllers;
 [Authorize]
 public class TasksController(IMediator mediator, ILogger<TasksController> logger) : ControllerBase
 {
-    [HttpGet]
-    public async Task<IActionResult> GetTasks([FromQuery] TaskFilterDto? filterDto = null)
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllTasks([FromQuery] TaskFilterDto? filterDto = null)
     {
         try
         {
@@ -49,31 +48,6 @@ public class TasksController(IMediator mediator, ILogger<TasksController> logger
         catch (Exception ex)
         {
             logger.LogError(ex, "Error occurred while getting tasks");
-            return BadRequest(new { message = ex.Message });
-        }
-    }
-
-    [HttpGet("queryable")]
-    public async Task<IActionResult> GetTasksQueryable([FromQuery] TaskFilterDto? filterDto = null)
-    {
-        try
-        {
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            
-            if (filterDto != null)
-            {
-                filterDto.UserId = userId;
-            }
-            
-            var query = new GetTasksQueryableQuery(filterDto);
-            var result = await mediator.Send(query);
-            var tasks = await result.ToListAsync();
-            
-            return Ok(tasks);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error occurred while getting tasks queryable");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -206,35 +180,5 @@ public class TasksController(IMediator mediator, ILogger<TasksController> logger
             return BadRequest(new { message = ex.Message });
         }
     }
-
-    [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetTasksByUser(Guid userId)
-    {
-        try
-        {
-            var currentUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            if (userId != currentUserId)
-                return Forbid("You can only view your own tasks");
-
-            var query = new GetTasksByUserQuery(userId);
-            var result = await mediator.Send(query);
-            
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-            
-            return BadRequest(new { message = result.Error });
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-    }
-
 }
 
