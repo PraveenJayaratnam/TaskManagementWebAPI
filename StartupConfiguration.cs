@@ -8,7 +8,6 @@ using Infrastructure.UnitOfWork;
 using Application.Services;
 using Application.Authentication;
 using Microsoft.AspNetCore.Authentication;
-using Domain.Entities;
 
 namespace TaskManagementWebAPI;
 
